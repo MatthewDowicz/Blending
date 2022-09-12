@@ -7,6 +7,7 @@ import btk.draw_blends
 import btk.catalog
 import btk.sampling_functions
 import astropy.table
+import galsim
 
 def BTK_blend_generator(catalog_name=None,
                         stamp_size=24.0,
@@ -66,7 +67,7 @@ def BTK_blend_generator(catalog_name=None,
     #---------#
     if catalog_name == None:
         # Change this to be user agnostic
-        catalog_name = "/Users/matt/Desktop/UCI_Research/LSST/BLTK/DS_creation/Data/OneDegSq.fits"
+        catalog_name = "/Users/matt/Desktop/UCI_Research/LSST/btk_blending/DS_creation/Data/OneDegSq.fits"
         catalog = btk.catalog.CatsimCatalog.from_file(catalog_name)
     else:
         catalog_name = str(catalog_name)
@@ -80,12 +81,12 @@ def BTK_blend_generator(catalog_name=None,
 
     # Sampling Function:
     #-------------------#
-    if sampling_function == None:
-        sampling_function = btk.sampling_functions.DefaultSampling(max_number=max_number,
+    if sampling_func == None:
+        sampling_func = btk.sampling_functions.DefaultSampling(max_number=max_number,
                                                               stamp_size=stamp_size,
                                                               maxshift=max_shift)
     else:
-        sampling_function = sampling_function
+        sampling_func = sampling_func
 
     # Survey
     #-------#
@@ -95,7 +96,7 @@ def BTK_blend_generator(catalog_name=None,
     #-------------#
     draw_generator = btk.draw_blends.CatsimGenerator(
         catalog=catalog,
-        sampling_function=sampling_function,
+        sampling_function=sampling_func,
         surveys=LSST,
         batch_size=batch_size,
         stamp_size=stamp_size,
@@ -112,3 +113,35 @@ def BTK_blend_generator(catalog_name=None,
     psf = batch['psf']
     
     return blend_images, isolated_images, psf
+
+
+def create_PSF_image(psf_list, blend_imgs):
+    """
+    Function that retrieves and creates 6 PSF images for each
+    LSST filter. 
+    
+    Args:
+    -----
+    psf_obj: list
+        List of galsim.convolve.Convolution objects. It stores 
+        pertinent information regarding the PSF for each LSST
+        filter.
+    blend_imgs: np.ndarray
+        Array containing the blended galaxy image postage stamps.
+        Has shape: (N_samples, N_channels, H, W).
+        This array is used to create the PSF images with the same
+        H and W.
+        
+    Returns:
+    --------
+    psf_arr: list
+        A list of the 2D PSF np.ndarrays for each filter.
+    """
+    psf_arr = []
+    for i in range(len(psf_list)):
+        image_epsf = galsim.ImageF(blend_imgs.shape[-1], blend_imgs.shape[-1])
+        psf_obj = psf_list[i].drawImage(image_epsf, scale=0.2)
+        psf_img = getattr(psf_obj, '_array')
+        psf_arr.append(psf_img)
+        
+    return psf_arr
