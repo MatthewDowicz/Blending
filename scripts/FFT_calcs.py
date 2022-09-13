@@ -18,6 +18,21 @@ def FFT_IFFT_calc(img, FFT=True):
             The default is FT=True.
     Returns:
     --------
+        if FFT=True:
+            f: np.ndarray
+                The complex FFT of the input image.
+            fshift: np.ndarray
+                The version of the FFT of the input image, where the 0th
+                frequency component is shifted to be at the center of the 
+                image.
+            magnitude_spectrum: np.ndarray
+                This is the spectrum of the FFT used in visualizations.
+                It is the logged transformed shifted magnitude of the FFT.
+        if FFT=False:
+            ifft_img: np.ndarray
+                The IFFT of the input image. Usually when using the
+                'FFT=False' kwarg the 'img' is already in Fourier Space.
+                
    
     """
     if FFT is True:        
