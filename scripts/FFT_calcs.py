@@ -106,7 +106,11 @@ def create_deconv_img(img, psf,
 
         GAL = fft.fft2(gal)
         PSF = fft.fft2(psf_img)
+        # Changing values close to 0 to eps to allow for deconvolution division
         PSF[np.abs(PSF) <= 0.0002]  = eps
+        # Normalizing the PSF to 1, so that it stays physical ie. it just moves photons
+        # around and not adding or destroying photons in the signal.
+        PSF = PSF/np.sum(PSF)
 
         # Deconvolution/ inverse filtering
         deconv_hat = np.divide(GAL, PSF)
@@ -124,7 +128,11 @@ def create_deconv_img(img, psf,
 
         GAL = fft.fft2(gal)
         PSF = fft.fft2(psf_img)
+        # Changing values close to 0 to eps to allow for deconvolution division
         PSF[np.abs(PSF) <= 0.0002]  = eps
+        # Normalizing the PSF to 1, so that it stays physical ie. it just moves photons
+        # around and not adding or destroying photons in the signal.
+        PSF = PSF/np.sum(PSF)
 
         # Deconvolution/ inverse filtering
         deconv_hat = np.divide(GAL, PSF)
